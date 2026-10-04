@@ -54,6 +54,10 @@ app.post("/v1/audiences/preview", (req, res) => {
 
 const PORT = 3000;
 
-app.listen(PORT, () => {
-  console.log(`Backend running on http://localhost:${PORT}`);
-});
+if(process.env.NODE_ENV !== "test"){
+  app.listen(PORT, () => {
+    console.log(`Backend running on http://localhost:${PORT}`);
+  });
+}
+
+export default app;
