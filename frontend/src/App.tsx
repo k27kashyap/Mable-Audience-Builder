@@ -1,4 +1,5 @@
 import { useState } from "react";
+import "./App.css";
 
 const EVENT_TYPES = [
   "page_view",
@@ -123,124 +124,197 @@ function App() {
     } finally {
       setLoading(false);
     }
-};
+  };
 
   return (
-    <main>
-      <h1>Mable Audience Builder</h1>
+    <main className="app">
+      <div className="container">
 
-      <label>
-        Audience name
-        <input
-          value={name}
-          onChange={(event) => setName(event.target.value)}
-          placeholder="e.g. Viewed but did not purchase"
-        />
-      </label>
-
-      <h2>Conditions</h2>
-
-      {conditions.map((condition, index) => (
-        <div key={index}>
-          <select
-            value={condition.eventType}
-            onChange={(event) =>
-              updateCondition(index, "eventType", event.target.value)
-            }
-          >
-            {EVENT_TYPES.map((eventType) => (
-              <option key={eventType} value={eventType}>
-                {eventType}
-              </option>
-            ))}
-          </select>
-
-          <select
-            value={condition.operator}
-            onChange={(event) =>
-              updateCondition(index, "operator", event.target.value)
-            }
-          >
-            <option value="at_least">at least</option>
-            <option value="exactly">exactly</option>
-          </select>
-
-          <input
-            type="number"
-            min="0"
-            value={condition.count}
-            onChange={(event) =>
-              updateCondition(index, "count", Number(event.target.value))
-            }
-          />
-
-          <span>times in the last</span>
-
-          <input
-            type="number"
-            min="1"
-            value={condition.withinDays}
-            onChange={(event) =>
-              updateCondition(index, "withinDays", Number(event.target.value))
-            }
-          />
-
-          <span>days</span>
-
-          {conditions.length > 1 && (
-            <button onClick={() => removeCondition(index)}>
-              Remove
-            </button>
-          )}
-        </div>
-      ))}
-
-      <button onClick={addCondition}>Add condition</button>
-      <button onClick={previewAudience} disabled={loading}>
-        {loading ? "Previewing..." : "Preview audience"}
-      </button>
-
-     {error && (
-        <div>
-          <p>{error}</p>
-
-          {apiError && (
-            <button onClick={previewAudience}>
-              Retry
-            </button>
-          )}
-        </div>
-      )}
-
-      {result && (
-        <section>
-          <h2>Audience preview</h2>
-
-          <p>
-            <strong>{result.total}</strong> matching users
+        <header className="header">
+          <p className="eyebrow">Audience Builder</p>
+          <h1>Build an audience</h1>
+          <p className="subtitle">
+            Define behavioral conditions and preview the users who match them.
           </p>
+        </header>
 
-          {result.members.length === 0 ? (
-            <p>No users match these conditions.</p>
-          ) : (
-            <ul>
-              {result.members.map((member) => (
-                <li key={member.anonymousId}>
-                  <strong>{member.anonymousId}</strong>
+        <div className="card">
 
-                  <ul>
-                    {member.evidence.map((item) => (
-                      <li key={item.eventType}>
-                        {item.eventType}: {item.observedCount}
-                      </li>
-                    ))}
-                  </ul>
-                </li>
-              ))}
-            </ul>
+          <div className="form-group">
+            <label className="form-label">
+              Audience name
+            </label>
+
+            <input
+              className="text-input"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              placeholder="e.g. Viewed but did not purchase"
+            />
+          </div>
+
+          <div className="section-header">
+            <h2>Conditions</h2>
+            <p className="section-description">
+              Users must satisfy all conditions.
+            </p>
+          </div>
+
+          <div className="conditions">
+            {conditions.map((condition, index) => (
+              <div className="condition" key={index}>
+
+                <select
+                  value={condition.eventType}
+                  onChange={(event) =>
+                    updateCondition(index, "eventType", event.target.value)
+                  }
+                >
+                  {EVENT_TYPES.map((eventType) => (
+                    <option key={eventType} value={eventType}>
+                      {eventType}
+                    </option>
+                  ))}
+                </select>
+
+                <select
+                  value={condition.operator}
+                  onChange={(event) =>
+                    updateCondition(index, "operator", event.target.value)
+                  }
+                >
+                  <option value="at_least">at least</option>
+                  <option value="exactly">exactly</option>
+                </select>
+
+                <input
+                  type="number"
+                  min="0"
+                  value={condition.count}
+                  onChange={(event) =>
+                    updateCondition(
+                      index,
+                      "count",
+                      Number(event.target.value)
+                    )
+                  }
+                />
+
+                <span className="condition-text">
+                  times in the last
+                </span>
+
+                <input
+                  type="number"
+                  min="1"
+                  value={condition.withinDays}
+                  onChange={(event) =>
+                    updateCondition(
+                      index,
+                      "withinDays",
+                      Number(event.target.value)
+                    )
+                  }
+                />
+
+                <span className="condition-text">days</span>
+
+                {conditions.length > 1 && (
+                  <button
+                    className="remove-condition"
+                    onClick={() => removeCondition(index)}
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <button
+            className="add-condition"
+            onClick={addCondition}
+          >
+            + Add condition
+          </button>
+
+          <div className="divider" />
+
+          <button
+            className="preview-button"
+            onClick={previewAudience}
+            disabled={loading}
+          >
+            {loading ? "Previewing..." : "Preview audience"}
+          </button>
+
+          {error && (
+            <div className="error">
+              <span>{error}</span>
+
+              {apiError && (
+                <button
+                  className="retry-button"
+                  onClick={previewAudience}
+                >
+                  Retry
+                </button>
+              )}
+            </div>
           )}
-        </section>
-      )}
+        </div>
+
+        {result && (
+          <section className="card result-card">
+
+            <div className="result-header">
+              <div>
+                <p className="result-label">
+                  Audience preview
+                </p>
+
+                <h2>{result.name}</h2>
+              </div>
+
+              <div className="result-count">
+                <strong>{result.total}</strong>
+                <span>matching users</span>
+              </div>
+            </div>
+
+            {result.members.length === 0 ? (
+              <div className="empty-state">
+                No users match these conditions.
+              </div>
+            ) : (
+              <ul className="members">
+                {result.members.map((member) => (
+                  <li
+                    className="member"
+                    key={member.anonymousId}
+                  >
+                    <div className="member-id">
+                      {member.anonymousId}
+                    </div>
+
+                    <div className="evidence">
+                      {member.evidence.map((item) => (
+                        <span
+                          className="evidence-item"
+                          key={item.eventType}
+                        >
+                          {item.eventType}: {item.observedCount}
+                        </span>
+                      ))}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+          </section>
+        )}
+      </div>
     </main>
   );
 }
