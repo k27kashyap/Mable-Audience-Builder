@@ -1,6 +1,9 @@
 import { useState } from "react";
 import "./App.css";
 
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
+
 const EVENT_TYPES = [
   "page_view",
   "product_view",
@@ -12,8 +15,8 @@ const EVENT_TYPES = [
 type Condition = {
   eventType: string;
   operator: "at_least" | "exactly";
-  count: number;
-  withinDays: number;
+  count: number | "";
+  withinDays: number | "";
 };
 
 function App() {
@@ -78,27 +81,28 @@ function App() {
 
   const previewAudience = async () => {
     setApiError(false);
-      if (!name.trim()) {
-        setError("Please enter an audience name.");
-        return;
-      }
+    if (!name.trim()) {
+      setError("Please enter an audience name.");
+      return;
+    }
 
-      if (conditions.some((condition) => condition.count < 0)) {
-        setError("Count cannot be negative.");
-        return;
-      }
+    if (conditions.some((condition) => condition.count !== "" && condition.count < 0)) {
+      setError("Count cannot be negative.");
+      return;
+    }
 
-      if (conditions.some((condition) => condition.withinDays < 1)) {
-        setError("Time window must be at least 1 day.");
-        return;
-      }
+    if (conditions.some((condition) => condition.withinDays === "" || condition.withinDays < 1)) {
+      setError("Time window must be at least 1 day.");
+      return;
+    }
+
     setLoading(true);
     setError("");
     setResult(null);
 
     try {
       const response = await fetch(
-        "http://localhost:3000/v1/audiences/preview",
+        `${API_BASE_URL}/v1/audiences/preview`,
         {
           method: "POST",
           headers: {
@@ -107,7 +111,11 @@ function App() {
           body: JSON.stringify({
             name,
             asOf: new Date().toISOString(),
-            conditions,
+            conditions: conditions.map((condition) => ({
+              ...condition,
+              count: condition.count === "" ? 0 : condition.count,
+              withinDays: Number(condition.withinDays),
+            })),
           }),
         }
       );
@@ -191,13 +199,24 @@ function App() {
                   type="number"
                   min="0"
                   value={condition.count}
-                  onChange={(event) =>
+                  onKeyDown={(event) => {
+                    if (
+                      condition.count === 0 &&
+                      /^[1-9]$/.test(event.key)
+                    ) {
+                      event.preventDefault();
+                      updateCondition(index, "count", Number(event.key));
+                    }
+                  }}
+                  onChange={(event) => {
+                    const value = event.target.value;
+
                     updateCondition(
                       index,
                       "count",
-                      Number(event.target.value)
-                    )
-                  }
+                      value === "" ? 0 : Number(value)
+                    );
+                  }}
                 />
 
                 <span className="condition-text">
@@ -208,13 +227,24 @@ function App() {
                   type="number"
                   min="1"
                   value={condition.withinDays}
-                  onChange={(event) =>
+                  onKeyDown={(event) => {
+                    if (
+                      condition.withinDays === 0 &&
+                      /^[1-9]$/.test(event.key)
+                    ) {
+                      event.preventDefault();
+                      updateCondition(index, "withinDays", Number(event.key));
+                    }
+                  }}
+                  onChange={(event) => {
+                    const value = event.target.value;
+
                     updateCondition(
                       index,
                       "withinDays",
-                      Number(event.target.value)
-                    )
-                  }
+                      value === "" ? 0 : Number(value)
+                    );
+                  }}
                 />
 
                 <span className="condition-text">days</span>
@@ -303,7 +333,8 @@ function App() {
                           className="evidence-item"
                           key={item.eventType}
                         >
-                          {item.eventType}: {item.observedCount}
+                          {item.eventType}: {item.observedCount} event
+                          {item.observedCount !== 1 ? "s" : ""}
                         </span>
                       ))}
                     </div>
