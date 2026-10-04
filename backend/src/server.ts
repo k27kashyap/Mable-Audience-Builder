@@ -1,9 +1,11 @@
 import express from "express";
+import cors from "cors";
 import { z } from "zod";
 import { evaluateAudience } from "./evaluator.js";
 
 const app = express();
 
+app.use(cors());
 app.use(express.json());
 
 const conditionSchema = z.object({
