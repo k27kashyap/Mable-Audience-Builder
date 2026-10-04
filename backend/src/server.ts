@@ -47,14 +47,22 @@ app.post("/v1/audiences/preview", (req, res) => {
 
   const { name, asOf, conditions } = result.data;
 
-  const members = evaluateAudience(conditions, asOf);
+  try {
+    const members = evaluateAudience(conditions, asOf);
 
-  return res.json({
-    name,
-    asOf,
-    total: members.length,
-    members,
-  });
+    return res.json({
+      name,
+      asOf,
+      total: members.length,
+      members,
+    });
+  } catch (error) {
+    console.error("Audience preview failed:", error);
+
+    return res.status(500).json({
+      error: "Unable to preview audience",
+    });
+  }
 });
 
 const PORT = 3000;
