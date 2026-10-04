@@ -56,13 +56,13 @@ Vite will provide the local URL, usually:
 http://localhost:5173
 ```
 
-The frontend defaults to:
+The frontend sneds API requests to the backend at:
 
 ```text
 http://localhost:3000
 ```
 
-for the backend. To override it, create a `.env` file using `.env.example`:
+To use a different backend URL, create a `.env` file using `.env.example`:
 
 ```text
 VITE_API_BASE_URL=http://localhost:3000
